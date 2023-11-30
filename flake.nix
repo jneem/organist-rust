@@ -15,12 +15,15 @@
   };
 
   outputs = {organist, ...} @ inputs:
-    let system = "x86_64-linux"; in
+    let system = "x86_64-linux"; in # FIXME, I guess...
     let organistOutputs = organist.flake.outputsFromNickel ./. inputs {}; in
     let pkgs = import inputs.nixpkgs { inherit system; }; in
     let targets = builtins.attrNames (pkgs.lib.attrsets.filterAttrs (n: v: builtins.isAttrs v) inputs.fenix.packages.${system}.targets); in
     organistOutputs //
     {
+      # Generates a nickel file containing the list of all targets supported by fenix. (It would be nice
+      # if we could somehow generate this completely on-the-fly but I didn't see how. It probably doesn't
+      # change too often.)
       packages.${system}.supportedTargets = pkgs.writeText "targets.ncl" ''
         {
         ${
